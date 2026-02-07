@@ -131,6 +131,34 @@ input[type="number"]:invalid {
     border-color: var(--danger-color);
 }
 
+textarea {
+    width: 100%;
+    padding: 0.875rem;
+    font-size: 1rem;
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    background: var(--card-bg);
+    color: var(--text-primary);
+    font-family: inherit;
+    resize: none;
+    transition: border-color 0.2s;
+    min-height: 80px;
+    overflow: hidden;
+}
+
+textarea:focus {
+    outline: none;
+    border-color: var(--primary-color);
+}
+
+.char-count {
+    display: block;
+    text-align: right;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    margin-top: 0.25rem;
+}
+
 /* Buttons */
 .btn {
     width: 100%;
@@ -191,11 +219,30 @@ input[type="number"]:invalid {
     background-color: var(--danger-dark);
 }
 
+.btn-sm {
+    width: auto;
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    min-height: auto;
+}
+
 .button-group {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 0.75rem;
     margin-top: 1rem;
+}
+
+/* History Header Section */
+.history-header-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.history-header-section h2 {
+    margin-bottom: 0;
 }
 
 /* Current Readings Section */
@@ -299,6 +346,27 @@ input[type="number"]:invalid {
     border-radius: 6px;
     font-size: 0.75rem;
     text-align: center;
+}
+
+.session-notes {
+    background: var(--card-bg);
+    padding: 0.75rem;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    margin-bottom: 0.75rem;
+    color: var(--text-primary);
+    border-left: 3px solid var(--primary-color);
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+.session-notes strong {
+    display: block;
+    margin-bottom: 0.25rem;
+    color: var(--text-secondary);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
 }
 
 .delete-session {

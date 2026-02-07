@@ -68,6 +68,19 @@
                 <div id="current-readings-section" class="hidden">
                     <h3>Current Session (<span id="reading-count">0</span>/10)</h3>
                     <div id="current-readings-list"></div>
+
+                    <div class="form-group">
+                        <label for="session-notes">Notes <span class="optional">Optional</span></label>
+                        <textarea
+                            id="session-notes"
+                            name="session-notes"
+                            rows="2"
+                            placeholder="Add any notes about this session (e.g., time of day, before/after medication, symptoms, etc.)"
+                            maxlength="500"
+                        ></textarea>
+                        <span class="char-count"><span id="notes-char-count">0</span>/500</span>
+                    </div>
+
                     <div class="button-group">
                         <button class="btn btn-success" id="save-session-btn">
                             Save Session
@@ -81,7 +94,12 @@
 
             <!-- History Section -->
             <section class="card" id="history-section">
-                <h2>History (Last 14 Days)</h2>
+                <div class="history-header-section">
+                    <h2>History (Last 14 Days)</h2>
+                    <button class="btn btn-danger btn-sm" id="clear-all-btn">
+                        Clear All Data
+                    </button>
+                </div>
                 <div id="history-list" class="history-list">
                     <p class="empty-state">No readings yet. Start by adding your first reading above.</p>
                 </div>

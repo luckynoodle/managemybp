@@ -17,8 +17,11 @@ const addReadingBtn = document.getElementById('add-reading-btn');
 const currentReadingsSection = document.getElementById('current-readings-section');
 const currentReadingsList = document.getElementById('current-readings-list');
 const readingCountSpan = document.getElementById('reading-count');
+const sessionNotesTextarea = document.getElementById('session-notes');
+const notesCharCount = document.getElementById('notes-char-count');
 const saveSessionBtn = document.getElementById('save-session-btn');
 const clearSessionBtn = document.getElementById('clear-session-btn');
+const clearAllBtn = document.getElementById('clear-all-btn');
 const historyList = document.getElementById('history-list');
 
 // Initialize app
@@ -33,6 +36,11 @@ function setupEventListeners() {
     readingForm.addEventListener('submit', handleAddReading);
     saveSessionBtn.addEventListener('click', handleSaveSession);
     clearSessionBtn.addEventListener('click', handleClearSession);
+    clearAllBtn.addEventListener('click', handleClearAllData);
+    sessionNotesTextarea.addEventListener('input', () => {
+        updateCharCount();
+        autoResizeTextarea();
+    });
 }
 
 // Handle adding a reading to current session
@@ -136,6 +144,9 @@ function handleSaveSession() {
     // Calculate averages
     const average = calculateAverage(currentReadings);
 
+    // Get notes
+    const notes = sessionNotesTextarea.value.trim();
+
     // Create session object
     const session = {
         id: Date.now(),
@@ -143,6 +154,11 @@ function handleSaveSession() {
         readings: [...currentReadings],
         average: average
     };
+
+    // Add notes if provided
+    if (notes) {
+        session.notes = notes;
+    }
 
     // Save to localStorage
     const sessions = getSessions();
@@ -153,6 +169,9 @@ function handleSaveSession() {
     currentReadings = [];
     currentReadingsSection.classList.add('hidden');
     readingForm.reset();
+    sessionNotesTextarea.value = '';
+    updateCharCount();
+    autoResizeTextarea();
 
     // Update history display
     renderHistory();
@@ -192,6 +211,42 @@ function handleClearSession() {
         currentReadings = [];
         currentReadingsSection.classList.add('hidden');
         readingForm.reset();
+        sessionNotesTextarea.value = '';
+        updateCharCount();
+        autoResizeTextarea();
+    }
+}
+
+// Update character count for notes
+function updateCharCount() {
+    const count = sessionNotesTextarea.value.length;
+    notesCharCount.textContent = count;
+}
+
+// Auto-resize textarea to fit content
+function autoResizeTextarea() {
+    // Reset height to allow shrinking
+    sessionNotesTextarea.style.height = 'auto';
+    // Set height to scrollHeight to fit content
+    sessionNotesTextarea.style.height = sessionNotesTextarea.scrollHeight + 'px';
+}
+
+// Handle clearing all session data
+function handleClearAllData() {
+    const sessions = getSessions();
+    if (sessions.length === 0) {
+        alert('No data to clear.');
+        return;
+    }
+
+    const confirmed = confirm(
+        `Are you sure you want to delete ALL ${sessions.length} session(s)? This action cannot be undone.`
+    );
+
+    if (confirmed) {
+        localStorage.removeItem(STORAGE_KEY);
+        renderHistory();
+        alert('All session data has been cleared.');
     }
 }
 
@@ -237,8 +292,14 @@ function createHistoryItem(session) {
             <span class="history-date">${dateStr} at ${timeStr}</span>
         </div>
         <div class="history-average">${avgText}</div>
-        <div class="history-meta">${session.readings.length} reading${session.readings.length > 1 ? 's' : ''} • Click to expand</div>
+        <div class="history-meta">${session.readings.length} reading${session.readings.length > 1 ? 's' : ''}${session.notes ? ' • Has notes' : ''} • Click to expand</div>
         <div class="history-details hidden" id="details-${session.id}">
+            ${session.notes ? `
+                <div class="session-notes">
+                    <strong>Notes:</strong>
+                    ${session.notes}
+                </div>
+            ` : ''}
             <div class="history-details-grid">
                 ${session.readings.map((reading, idx) => `
                     <div class="detail-reading">
