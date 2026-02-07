@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="description" content="Track and manage your blood pressure readings">
+    <meta name="theme-color" content="#2563eb">
+    <title>Blood Pressure Tracker</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>💙 Blood Pressure Tracker</h1>
+            <p class="subtitle">Track your readings with ease</p>
+        </header>
+
+        <main>
+            <!-- New Reading Session Section -->
+            <section class="card" id="new-session-section">
+                <h2>New Reading Session</h2>
+
+                <form id="reading-form">
+                    <div class="form-group">
+                        <label for="systolic">Systolic (mmHg)</label>
+                        <input
+                            type="number"
+                            id="systolic"
+                            name="systolic"
+                            min="70"
+                            max="200"
+                            required
+                            placeholder="120"
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="diastolic">Diastolic (mmHg)</label>
+                        <input
+                            type="number"
+                            id="diastolic"
+                            name="diastolic"
+                            min="40"
+                            max="130"
+                            required
+                            placeholder="80"
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="pulse">Pulse (bpm) <span class="optional">Optional</span></label>
+                        <input
+                            type="number"
+                            id="pulse"
+                            name="pulse"
+                            min="40"
+                            max="200"
+                            placeholder="70"
+                        >
+                    </div>
+
+                    <button type="submit" class="btn btn-primary" id="add-reading-btn">
+                        Add Reading
+                    </button>
+                </form>
+
+                <!-- Current Session Readings -->
+                <div id="current-readings-section" class="hidden">
+                    <h3>Current Session (<span id="reading-count">0</span>/10)</h3>
+                    <div id="current-readings-list"></div>
+                    <div class="button-group">
+                        <button class="btn btn-success" id="save-session-btn">
+                            Save Session
+                        </button>
+                        <button class="btn btn-secondary" id="clear-session-btn">
+                            Clear
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- History Section -->
+            <section class="card" id="history-section">
+                <h2>History (Last 14 Days)</h2>
+                <div id="history-list" class="history-list">
+                    <p class="empty-state">No readings yet. Start by adding your first reading above.</p>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <p>Data is stored locally on your device and automatically deleted after 14 days.</p>
+        </footer>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
