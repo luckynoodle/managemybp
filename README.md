@@ -5,10 +5,14 @@ A mobile-friendly web application for tracking and managing blood pressure readi
 ## Features
 
 - **Batch Entry**: Record up to 10 blood pressure readings per session
+- **Session Notes**: Add notes to each session (up to 500 characters) with auto-expanding textarea
 - **Automatic Averaging**: Calculates average systolic, diastolic, and pulse values
+- **Data Export**: Export all readings to a formatted text file
 - **Local Storage**: All data stored securely on your device
 - **14-Day Retention**: Automatic cleanup of readings older than 2 weeks
-- **Mobile Optimized**: Responsive design for iOS and Android devices
+- **Session Management**: Delete individual sessions or clear all data at once
+- **Compact UI**: Space-efficient design fits more information on screen
+- **Mobile Optimized**: Responsive, touch-friendly design for iOS and Android devices
 - **Offline Capable**: Works without internet connection
 - **Dark Mode**: Automatic dark mode support based on system preferences
 
@@ -25,31 +29,57 @@ A mobile-friendly web application for tracking and managing blood pressure readi
 
 - Add multiple readings (up to 10) for more accurate averages
 - Review your current readings before saving
-- Click "Save Session" to store with calculated averages
+- Optionally add notes about the session (time of day, medication, symptoms, etc.)
+- Notes field auto-expands as you type (up to 500 characters)
+- Click "Save Session" to store with calculated averages and notes
 - Use "Clear" to start over if needed
 
 ### Viewing History
 
 - All saved sessions appear in the History section
-- Sessions are ordered newest first
-- Click any session to expand and view individual readings
-- Delete sessions you no longer need
+- Sessions are ordered newest first (most recent at top)
+- Click any session to expand and view:
+  - Individual readings from that session
+  - Session notes (if added)
+  - Delete button for that specific session
+- Sessions with notes show "• Has notes" indicator
+
+### Managing Your Data
+
+- **Export Data**: Click "Export Data" to download all sessions as a text file
+  - Includes all readings, averages, dates, and notes
+  - File named with current date (e.g., `bp-readings-2026-02-07.txt`)
+  - Perfect for sharing with your doctor or keeping backups
+- **Delete Individual Session**: Expand a session and click "Delete Session"
+- **Clear All Data**: Click "Clear All Data" to remove all sessions (with confirmation)
 
 ## Data Management
 
 - **Storage**: All data is stored locally in your browser's localStorage
-- **Privacy**: No data is sent to any server
-- **Retention**: Readings older than 14 days are automatically deleted
-- **Backup**: Data is device-specific; export functionality not included
+- **Privacy**: No data is sent to any server - everything stays on your device
+- **Retention**: Readings older than 14 days are automatically deleted on app load
+- **Export**: Download all your data as a text file for backup or sharing
+- **Device-Specific**: Data is stored per device/browser - export to transfer between devices
+
+## UI Features
+
+- **Compact Layout**: Space-efficient design maximizes screen real estate
+- **Side-by-Side Inputs**: Systolic and diastolic fields displayed horizontally
+- **Auto-Expanding Notes**: Textarea grows automatically as you type
+- **Character Counter**: Live count shows remaining characters for notes (500 max)
+- **Touch-Friendly**: All buttons and inputs sized for easy mobile interaction (44px minimum)
+- **Visual Feedback**: Color-coded buttons and hover effects
+- **Expandable History**: Click to expand sessions and view details
 
 ## Technical Details
 
 ### Technologies Used
 
-- Pure HTML5, CSS3, and JavaScript (no frameworks)
+- Pure HTML5, CSS3, and JavaScript (no frameworks or dependencies)
 - LocalStorage API for data persistence
 - Responsive CSS with mobile-first design
 - CSS Grid and Flexbox for layouts
+- Blob API for file download/export functionality
 
 ### Browser Compatibility
 

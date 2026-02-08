@@ -21,6 +21,7 @@ const sessionNotesTextarea = document.getElementById('session-notes');
 const notesCharCount = document.getElementById('notes-char-count');
 const saveSessionBtn = document.getElementById('save-session-btn');
 const clearSessionBtn = document.getElementById('clear-session-btn');
+const exportDataBtn = document.getElementById('export-data-btn');
 const clearAllBtn = document.getElementById('clear-all-btn');
 const historyList = document.getElementById('history-list');
 
@@ -36,6 +37,7 @@ function setupEventListeners() {
     readingForm.addEventListener('submit', handleAddReading);
     saveSessionBtn.addEventListener('click', handleSaveSession);
     clearSessionBtn.addEventListener('click', handleClearSession);
+    exportDataBtn.addEventListener('click', handleExportData);
     clearAllBtn.addEventListener('click', handleClearAllData);
     sessionNotesTextarea.addEventListener('input', () => {
         updateCharCount();
@@ -248,6 +250,68 @@ function handleClearAllData() {
         renderHistory();
         alert('All session data has been cleared.');
     }
+}
+
+// Handle exporting data to text file
+function handleExportData() {
+    const sessions = getSessions();
+    if (sessions.length === 0) {
+        alert('No data to export.');
+        return;
+    }
+
+    // Generate text content
+    let textContent = 'Blood Pressure Reading History\n';
+    textContent += '================================\n\n';
+
+    sessions.forEach((session, index) => {
+        const date = new Date(session.date);
+        const dateStr = date.toLocaleDateString(undefined, {
+            weekday: 'short',
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric'
+        });
+        const timeStr = date.toLocaleTimeString(undefined, {
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+
+        textContent += `Session ${sessions.length - index} - ${dateStr} at ${timeStr}\n`;
+        textContent += '-'.repeat(50) + '\n';
+        textContent += `Average: ${session.average.systolic}/${session.average.diastolic}`;
+        if (session.average.pulse) {
+            textContent += ` • ${session.average.pulse} bpm`;
+        }
+        textContent += '\n';
+        textContent += `Number of readings: ${session.readings.length}\n\n`;
+
+        textContent += 'Individual Readings:\n';
+        session.readings.forEach((reading, idx) => {
+            textContent += `  ${idx + 1}. ${reading.systolic}/${reading.diastolic}`;
+            if (reading.pulse) {
+                textContent += ` • ${reading.pulse} bpm`;
+            }
+            textContent += '\n';
+        });
+
+        if (session.notes) {
+            textContent += `\nNotes: ${session.notes}\n`;
+        }
+
+        textContent += '\n\n';
+    });
+
+    // Create and download file
+    const blob = new Blob([textContent], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `bp-readings-${new Date().toISOString().split('T')[0]}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
 }
 
 // Render history

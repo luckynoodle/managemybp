@@ -257,6 +257,11 @@ textarea:focus {
     margin-bottom: 0;
 }
 
+.history-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
 /* Current Readings Section */
 #current-readings-section {
     margin-top: 1.25rem;
