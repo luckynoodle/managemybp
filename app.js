@@ -1,9 +1,7 @@
-// Blood Pressure Tracker App
-// Data is stored in localStorage with automatic 14-day cleanup
+// Blood Pressure Tracker - Main Page (New Reading)
+// Shared data functions are in storage.js (BPStorage)
 
-const STORAGE_KEY = 'bp_sessions';
 const MAX_READINGS_PER_SESSION = 10;
-const RETENTION_DAYS = 14;
 
 // Current session state
 let currentReadings = [];
@@ -13,7 +11,6 @@ const readingForm = document.getElementById('reading-form');
 const systolicInput = document.getElementById('systolic');
 const diastolicInput = document.getElementById('diastolic');
 const pulseInput = document.getElementById('pulse');
-const addReadingBtn = document.getElementById('add-reading-btn');
 const currentReadingsSection = document.getElementById('current-readings-section');
 const currentReadingsList = document.getElementById('current-readings-list');
 const readingCountSpan = document.getElementById('reading-count');
@@ -21,14 +18,10 @@ const sessionNotesTextarea = document.getElementById('session-notes');
 const notesCharCount = document.getElementById('notes-char-count');
 const saveSessionBtn = document.getElementById('save-session-btn');
 const clearSessionBtn = document.getElementById('clear-session-btn');
-const exportDataBtn = document.getElementById('export-data-btn');
-const clearAllBtn = document.getElementById('clear-all-btn');
-const historyList = document.getElementById('history-list');
 
 // Initialize app
 document.addEventListener('DOMContentLoaded', () => {
-    cleanOldSessions();
-    renderHistory();
+    BPStorage.cleanOldSessions();
     setupEventListeners();
 });
 
@@ -37,8 +30,6 @@ function setupEventListeners() {
     readingForm.addEventListener('submit', handleAddReading);
     saveSessionBtn.addEventListener('click', handleSaveSession);
     clearSessionBtn.addEventListener('click', handleClearSession);
-    exportDataBtn.addEventListener('click', handleExportData);
-    clearAllBtn.addEventListener('click', handleClearAllData);
     sessionNotesTextarea.addEventListener('input', () => {
         updateCharCount();
         autoResizeTextarea();
@@ -58,12 +49,10 @@ function handleAddReading(e) {
     const diastolic = parseInt(diastolicInput.value);
     const pulse = pulseInput.value ? parseInt(pulseInput.value) : null;
 
-    // Validation
     if (!validateReading(systolic, diastolic, pulse)) {
         return;
     }
 
-    // Add reading to current session
     const reading = { systolic, diastolic };
     if (pulse !== null) {
         reading.pulse = pulse;
@@ -71,12 +60,9 @@ function handleAddReading(e) {
 
     currentReadings.push(reading);
 
-    // Update UI
     renderCurrentReadings();
     readingForm.reset();
     systolicInput.focus();
-
-    // Show current readings section
     currentReadingsSection.classList.remove('hidden');
 }
 
@@ -143,13 +129,9 @@ function handleSaveSession() {
         return;
     }
 
-    // Calculate averages
-    const average = calculateAverage(currentReadings);
-
-    // Get notes
+    const average = BPStorage.calculateAverage(currentReadings);
     const notes = sessionNotesTextarea.value.trim();
 
-    // Create session object
     const session = {
         id: Date.now(),
         date: new Date().toISOString(),
@@ -157,15 +139,13 @@ function handleSaveSession() {
         average: average
     };
 
-    // Add notes if provided
     if (notes) {
         session.notes = notes;
     }
 
-    // Save to localStorage
-    const sessions = getSessions();
-    sessions.unshift(session); // Add to beginning (newest first)
-    saveSessions(sessions);
+    const sessions = BPStorage.getSessions();
+    sessions.unshift(session);
+    BPStorage.saveSessions(sessions);
 
     // Reset current session
     currentReadings = [];
@@ -175,36 +155,10 @@ function handleSaveSession() {
     updateCharCount();
     autoResizeTextarea();
 
-    // Update history display
-    renderHistory();
-
-    // Show confirmation
-    alert(`Session saved! Average: ${average.systolic}/${average.diastolic}${average.pulse ? ` • ${average.pulse} bpm` : ''}`);
-}
-
-// Calculate average of readings
-function calculateAverage(readings) {
-    const sum = readings.reduce((acc, reading) => {
-        acc.systolic += reading.systolic;
-        acc.diastolic += reading.diastolic;
-        if (reading.pulse !== undefined) {
-            acc.pulse += reading.pulse;
-            acc.pulseCount++;
-        }
-        return acc;
-    }, { systolic: 0, diastolic: 0, pulse: 0, pulseCount: 0 });
-
-    const count = readings.length;
-    const average = {
-        systolic: Math.round(sum.systolic / count),
-        diastolic: Math.round(sum.diastolic / count)
-    };
-
-    if (sum.pulseCount > 0) {
-        average.pulse = Math.round(sum.pulse / sum.pulseCount);
+    const avgText = `${average.systolic}/${average.diastolic}${average.pulse ? ` • ${average.pulse} bpm` : ''}`;
+    if (confirm(`Session saved! Average: ${avgText}\n\nView in history?`)) {
+        window.location.href = 'history.html';
     }
-
-    return average;
 }
 
 // Handle clearing current session
@@ -227,211 +181,6 @@ function updateCharCount() {
 
 // Auto-resize textarea to fit content
 function autoResizeTextarea() {
-    // Reset height to allow shrinking
     sessionNotesTextarea.style.height = 'auto';
-    // Set height to scrollHeight to fit content
     sessionNotesTextarea.style.height = sessionNotesTextarea.scrollHeight + 'px';
-}
-
-// Handle clearing all session data
-function handleClearAllData() {
-    const sessions = getSessions();
-    if (sessions.length === 0) {
-        alert('No data to clear.');
-        return;
-    }
-
-    const confirmed = confirm(
-        `Are you sure you want to delete ALL ${sessions.length} session(s)? This action cannot be undone.`
-    );
-
-    if (confirmed) {
-        localStorage.removeItem(STORAGE_KEY);
-        renderHistory();
-        alert('All session data has been cleared.');
-    }
-}
-
-// Handle exporting data to text file
-function handleExportData() {
-    const sessions = getSessions();
-    if (sessions.length === 0) {
-        alert('No data to export.');
-        return;
-    }
-
-    // Generate text content
-    let textContent = 'Blood Pressure Reading History\n';
-    textContent += '================================\n\n';
-
-    sessions.forEach((session, index) => {
-        const date = new Date(session.date);
-        const dateStr = date.toLocaleDateString(undefined, {
-            weekday: 'short',
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric'
-        });
-        const timeStr = date.toLocaleTimeString(undefined, {
-            hour: '2-digit',
-            minute: '2-digit'
-        });
-
-        textContent += `Session ${sessions.length - index} - ${dateStr} at ${timeStr}\n`;
-        textContent += '-'.repeat(50) + '\n';
-        textContent += `Average: ${session.average.systolic}/${session.average.diastolic}`;
-        if (session.average.pulse) {
-            textContent += ` • ${session.average.pulse} bpm`;
-        }
-        textContent += '\n';
-        textContent += `Number of readings: ${session.readings.length}\n\n`;
-
-        textContent += 'Individual Readings:\n';
-        session.readings.forEach((reading, idx) => {
-            textContent += `  ${idx + 1}. ${reading.systolic}/${reading.diastolic}`;
-            if (reading.pulse) {
-                textContent += ` • ${reading.pulse} bpm`;
-            }
-            textContent += '\n';
-        });
-
-        if (session.notes) {
-            textContent += `\nNotes: ${session.notes}\n`;
-        }
-
-        textContent += '\n\n';
-    });
-
-    // Create and download file
-    const blob = new Blob([textContent], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `bp-readings-${new Date().toISOString().split('T')[0]}.txt`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-}
-
-// Render history
-function renderHistory() {
-    const sessions = getSessions();
-
-    if (sessions.length === 0) {
-        historyList.innerHTML = '<p class="empty-state">No readings yet. Start by adding your first reading above.</p>';
-        return;
-    }
-
-    historyList.innerHTML = '';
-
-    sessions.forEach(session => {
-        const historyItem = createHistoryItem(session);
-        historyList.appendChild(historyItem);
-    });
-}
-
-// Create a history item element
-function createHistoryItem(session) {
-    const div = document.createElement('div');
-    div.className = 'history-item';
-    div.dataset.sessionId = session.id;
-
-    const date = new Date(session.date);
-    const dateStr = date.toLocaleDateString(undefined, {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric'
-    });
-    const timeStr = date.toLocaleTimeString(undefined, {
-        hour: '2-digit',
-        minute: '2-digit'
-    });
-
-    const avg = session.average;
-    const avgText = `${avg.systolic}/${avg.diastolic}${avg.pulse ? ` • ${avg.pulse} bpm` : ''}`;
-
-    div.innerHTML = `
-        <div class="history-header">
-            <span class="history-date">${dateStr} at ${timeStr}</span>
-        </div>
-        <div class="history-average">${avgText}</div>
-        <div class="history-meta">${session.readings.length} reading${session.readings.length > 1 ? 's' : ''}${session.notes ? ' • Has notes' : ''} • Click to expand</div>
-        <div class="history-details hidden" id="details-${session.id}">
-            ${session.notes ? `
-                <div class="session-notes">
-                    <strong>Notes:</strong>
-                    ${session.notes}
-                </div>
-            ` : ''}
-            <div class="history-details-grid">
-                ${session.readings.map((reading, idx) => `
-                    <div class="detail-reading">
-                        <strong>#${idx + 1}</strong><br>
-                        ${reading.systolic}/${reading.diastolic}${reading.pulse ? `<br>${reading.pulse} bpm` : ''}
-                    </div>
-                `).join('')}
-            </div>
-            <button class="btn btn-danger delete-session" data-session-id="${session.id}">
-                Delete Session
-            </button>
-        </div>
-    `;
-
-    // Toggle details on click
-    div.addEventListener('click', (e) => {
-        if (e.target.classList.contains('delete-session')) {
-            e.stopPropagation();
-            handleDeleteSession(session.id);
-        } else if (!e.target.closest('.history-details')) {
-            const details = div.querySelector('.history-details');
-            details.classList.toggle('hidden');
-        }
-    });
-
-    return div;
-}
-
-// Handle deleting a session
-function handleDeleteSession(sessionId) {
-    if (confirm('Are you sure you want to delete this session?')) {
-        let sessions = getSessions();
-        sessions = sessions.filter(s => s.id !== sessionId);
-        saveSessions(sessions);
-        renderHistory();
-    }
-}
-
-// LocalStorage functions
-function getSessions() {
-    try {
-        const data = localStorage.getItem(STORAGE_KEY);
-        return data ? JSON.parse(data) : [];
-    } catch (error) {
-        console.error('Error reading from localStorage:', error);
-        return [];
-    }
-}
-
-function saveSessions(sessions) {
-    try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(sessions));
-    } catch (error) {
-        console.error('Error saving to localStorage:', error);
-        alert('Failed to save data. Storage might be full.');
-    }
-}
-
-// Clean sessions older than RETENTION_DAYS
-function cleanOldSessions() {
-    const cutoffDate = Date.now() - (RETENTION_DAYS * 24 * 60 * 60 * 1000);
-    let sessions = getSessions();
-    const originalCount = sessions.length;
-
-    sessions = sessions.filter(session => session.id >= cutoffDate);
-
-    if (sessions.length < originalCount) {
-        saveSessions(sessions);
-        console.log(`Cleaned ${originalCount - sessions.length} old session(s)`);
-    }
 }
