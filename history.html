@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="description" content="View your blood pressure history and trends">
+    <meta name="theme-color" content="#2563eb">
+    <title>History - Blood Pressure Tracker</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>💙 Blood Pressure Tracker</h1>
+            <p class="subtitle">History &amp; Trends</p>
+        </header>
+
+        <nav class="nav-bar">
+            <a href="index.html" class="nav-link">New Reading</a>
+            <a href="history.html" class="nav-link active">History</a>
+        </nav>
+
+        <main>
+            <!-- Filter Section -->
+            <section class="card">
+                <h2>Date Range</h2>
+                <div class="filter-buttons">
+                    <button class="filter-btn active" data-filter="7">Last 7 days</button>
+                    <button class="filter-btn" data-filter="14">Last 14 days</button>
+                    <button class="filter-btn" data-filter="30">Last 30 days</button>
+                    <button class="filter-btn" data-filter="custom">Custom</button>
+                </div>
+                <div class="custom-date-range hidden" id="custom-date-range">
+                    <div>
+                        <label for="start-date">From</label>
+                        <input type="date" id="start-date" name="start-date">
+                    </div>
+                    <div>
+                        <label for="end-date">To</label>
+                        <input type="date" id="end-date" name="end-date">
+                    </div>
+                </div>
+            </section>
+
+            <!-- Trend Graph -->
+            <section class="graph-container" id="graph-section">
+                <h2>Trend</h2>
+                <div class="graph-canvas-wrap">
+                    <canvas id="trend-canvas"></canvas>
+                </div>
+                <div class="graph-legend">
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #ef4444;"></div>
+                        <span>Systolic</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #3b82f6;"></div>
+                        <span>Diastolic</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #10b981;"></div>
+                        <span>Pulse</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- History List -->
+            <section class="card" id="history-section">
+                <div class="history-header-section">
+                    <h2>Sessions (<span id="session-count">0</span>)</h2>
+                    <div class="history-actions">
+                        <button class="btn btn-secondary btn-sm" id="export-data-btn">
+                            Export
+                        </button>
+                        <button class="btn btn-danger btn-sm" id="clear-all-btn">
+                            Clear All
+                        </button>
+                    </div>
+                </div>
+                <div id="history-list" class="history-list">
+                    <p class="empty-state">No readings in selected date range.</p>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <p>Data is stored locally on your device and automatically deleted after 30 days.</p>
+        </footer>
+    </div>
+
+    <script src="storage.js"></script>
+    <script src="history.js"></script>
+</body>
+</html>
