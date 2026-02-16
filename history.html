@@ -45,39 +45,42 @@
 
             <!-- Trend Graph -->
             <section class="graph-container" id="graph-section">
-                <h2>Trend</h2>
+                <div class="graph-header">
+                    <h2>Trend</h2>
+                    <button class="cb-toggle" id="cb-toggle" aria-label="Toggle colour vision difference mode">CVD</button>
+                </div>
                 <div class="graph-canvas-wrap">
                     <canvas id="trend-canvas"></canvas>
                 </div>
                 <div class="graph-legend">
                     <div class="legend-item">
-                        <div class="legend-color" style="background: #ef4444;"></div>
+                        <div class="legend-color" id="legend-sys" style="background: #ef4444;"></div>
                         <span>Systolic</span>
                     </div>
                     <div class="legend-item">
-                        <div class="legend-color" style="background: #3b82f6;"></div>
+                        <div class="legend-color" id="legend-dia" style="background: #3b82f6;"></div>
                         <span>Diastolic</span>
                     </div>
                     <div class="legend-item">
-                        <div class="legend-color" style="background: #10b981;"></div>
+                        <div class="legend-color" id="legend-pulse" style="background: #10b981;"></div>
                         <span>Pulse</span>
                     </div>
                 </div>
                 <div class="graph-legend graph-legend-zones">
                     <div class="legend-item">
-                        <div class="legend-color" style="background: rgba(59, 130, 246, 0.25);"></div>
+                        <div class="legend-color" id="legend-low" style="background: rgba(59, 130, 246, 0.25);"></div>
                         <span>Low</span>
                     </div>
                     <div class="legend-item">
-                        <div class="legend-color" style="background: rgba(16, 185, 129, 0.25);"></div>
+                        <div class="legend-color" id="legend-normal" style="background: rgba(16, 185, 129, 0.25);"></div>
                         <span>Normal</span>
                     </div>
                     <div class="legend-item">
-                        <div class="legend-color" style="background: rgba(245, 158, 11, 0.25);"></div>
+                        <div class="legend-color" id="legend-elevated" style="background: rgba(245, 158, 11, 0.25);"></div>
                         <span>Elevated</span>
                     </div>
                     <div class="legend-item">
-                        <div class="legend-color" style="background: rgba(239, 68, 68, 0.25);"></div>
+                        <div class="legend-color" id="legend-high" style="background: rgba(239, 68, 68, 0.25);"></div>
                         <span>High</span>
                     </div>
                 </div>
@@ -139,9 +142,22 @@
                         <li>Navigate to the "History" tab to view saved sessions</li>
                         <li>Filter by date range: 7 days, 14 days, 30 days, or custom</li>
                         <li>View the trend graph showing systolic, diastolic, and pulse</li>
-                        <li>The shaded green area shows normal BP range (80-120)</li>
                         <li>Tap a session to expand details and view individual readings</li>
                     </ul>
+                </div>
+                <div class="guide-section">
+                    <h3>BP Classification Zones</h3>
+                    <p>The trend graph displays colour-coded background zones:</p>
+                    <ul>
+                        <li><strong>Low</strong> (blue) - Below 90 mmHg systolic</li>
+                        <li><strong>Normal</strong> (green) - 90-120 mmHg systolic</li>
+                        <li><strong>Elevated</strong> (amber) - 120-140 mmHg systolic</li>
+                        <li><strong>High</strong> (red) - Above 140 mmHg systolic</li>
+                    </ul>
+                </div>
+                <div class="guide-section">
+                    <h3>Colour Vision Difference Mode</h3>
+                    <p>Tap the "CVD" button on the trend graph to switch to an accessible colour palette. Lines will use different dash patterns and dot shapes for easier identification. Your preference is saved automatically.</p>
                 </div>
                 <div class="guide-section">
                     <h3>Managing Data</h3>
