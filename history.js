@@ -225,14 +225,15 @@ function renderGraph(sessions) {
     const gw = w - pad.left - pad.right;
     const gh = h - pad.top - pad.bottom;
 
-    // Normal BP thresholds
-    const NORMAL_SYS = 120;  // Normal systolic upper limit
-    const NORMAL_DIA = 80;   // Normal diastolic upper limit
+    // BP classification thresholds
+    const BP_LOW = 90;       // Below = hypotension
+    const BP_NORMAL = 120;   // Below = normal
+    const BP_ELEVATED = 140; // Below = elevated, above = high
 
-    // Y-axis range (ensure normal range is always visible)
+    // Y-axis range (ensure key zones are visible)
     const allVals = points.flatMap(p => [p.sys, p.dia, p.pulse].filter(v => v !== null));
-    const minY = Math.floor(Math.min(Math.min(...allVals), NORMAL_DIA - 10) / 10) * 10 - 10;
-    const maxY = Math.ceil(Math.max(Math.max(...allVals), NORMAL_SYS + 10) / 10) * 10 + 10;
+    const minY = Math.floor(Math.min(Math.min(...allVals), BP_LOW - 10) / 10) * 10 - 10;
+    const maxY = Math.ceil(Math.max(Math.max(...allVals), BP_ELEVATED + 10) / 10) * 10 + 10;
     const yRange = maxY - minY;
 
     const toY = v => pad.top + gh - ((v - minY) / yRange) * gh;
@@ -256,36 +257,46 @@ function renderGraph(sessions) {
         ctx.fillText(Math.round(val).toString(), pad.left - 6, y + 4);
     }
 
-    // Normal BP range shaded band (between 80 and 120)
-    const normalTop = toY(NORMAL_SYS);
-    const normalBottom = toY(NORMAL_DIA);
-    ctx.fillStyle = 'rgba(16, 185, 129, 0.08)';
-    ctx.fillRect(pad.left, normalTop, gw, normalBottom - normalTop);
+    // BP classification zones (subtle background bands)
+    const zones = [
+        { from: minY, to: BP_LOW, color: 'rgba(59, 130, 246, 0.07)' },   // Low - blue
+        { from: BP_LOW, to: BP_NORMAL, color: 'rgba(16, 185, 129, 0.07)' }, // Normal - green
+        { from: BP_NORMAL, to: BP_ELEVATED, color: 'rgba(245, 158, 11, 0.07)' }, // Elevated - amber
+        { from: BP_ELEVATED, to: maxY, color: 'rgba(239, 68, 68, 0.07)' }  // High - red
+    ];
 
-    // Dashed reference line at 120 (normal systolic limit)
+    zones.forEach(zone => {
+        const top = toY(Math.min(zone.to, maxY));
+        const bottom = toY(Math.max(zone.from, minY));
+        ctx.fillStyle = zone.color;
+        ctx.fillRect(pad.left, top, gw, bottom - top);
+    });
+
+    // Dashed boundary lines between zones
     ctx.save();
     ctx.setLineDash([6, 4]);
-    ctx.lineWidth = 1.5;
-    ctx.strokeStyle = 'rgba(239, 68, 68, 0.45)';
-    ctx.beginPath();
-    ctx.moveTo(pad.left, normalTop);
-    ctx.lineTo(w - pad.right, normalTop);
-    ctx.stroke();
-
+    ctx.lineWidth = 1;
     ctx.font = '9px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
-    ctx.fillStyle = 'rgba(239, 68, 68, 0.7)';
     ctx.textAlign = 'left';
-    ctx.fillText('120', w - pad.right + 3, normalTop + 3);
 
-    // Dashed reference line at 80 (normal diastolic limit)
-    ctx.strokeStyle = 'rgba(59, 130, 246, 0.45)';
-    ctx.beginPath();
-    ctx.moveTo(pad.left, normalBottom);
-    ctx.lineTo(w - pad.right, normalBottom);
-    ctx.stroke();
+    const boundaries = [
+        { val: BP_LOW, color: 'rgba(59, 130, 246, 0.4)', label: '90' },
+        { val: BP_NORMAL, color: 'rgba(245, 158, 11, 0.4)', label: '120' },
+        { val: BP_ELEVATED, color: 'rgba(239, 68, 68, 0.4)', label: '140' }
+    ];
 
-    ctx.fillStyle = 'rgba(59, 130, 246, 0.7)';
-    ctx.fillText('80', w - pad.right + 3, normalBottom + 3);
+    boundaries.forEach(b => {
+        if (b.val > minY && b.val < maxY) {
+            const y = toY(b.val);
+            ctx.strokeStyle = b.color;
+            ctx.beginPath();
+            ctx.moveTo(pad.left, y);
+            ctx.lineTo(w - pad.right, y);
+            ctx.stroke();
+            ctx.fillStyle = b.color.replace('0.4', '0.7');
+            ctx.fillText(b.label, w - pad.right + 3, y + 3);
+        }
+    });
     ctx.restore();
 
     // Draw a data line

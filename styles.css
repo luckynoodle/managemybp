@@ -685,6 +685,10 @@ input[type="date"]:focus {
     gap: 0.25rem;
 }
 
+.graph-legend-zones {
+    margin-top: 0.25rem;
+}
+
 .legend-color {
     width: 12px;
     height: 12px;
