@@ -6,6 +6,59 @@ let currentFilter = '7';
 let customStartDate = null;
 let customEndDate = null;
 
+// Colour blind mode
+let colorBlindMode = localStorage.getItem('bp_cb_mode') === 'true';
+
+// Color palettes
+const PALETTE = {
+    standard: {
+        sys:   { color: '#ef4444', dash: [],     dot: 'circle' },
+        dia:   { color: '#3b82f6', dash: [],     dot: 'circle' },
+        pulse: { color: '#10b981', dash: [],     dot: 'circle' },
+        zones: [
+            'rgba(59, 130, 246, 0.07)',   // Low
+            'rgba(16, 185, 129, 0.07)',   // Normal
+            'rgba(245, 158, 11, 0.07)',   // Elevated
+            'rgba(239, 68, 68, 0.07)'     // High
+        ],
+        boundaries: [
+            'rgba(59, 130, 246, 0.4)',
+            'rgba(245, 158, 11, 0.4)',
+            'rgba(239, 68, 68, 0.4)'
+        ],
+        legendLines: ['#ef4444', '#3b82f6', '#10b981'],
+        legendZones: [
+            'rgba(59, 130, 246, 0.25)',
+            'rgba(16, 185, 129, 0.25)',
+            'rgba(245, 158, 11, 0.25)',
+            'rgba(239, 68, 68, 0.25)'
+        ]
+    },
+    cb: {
+        sys:   { color: '#0072B2', dash: [],      dot: 'circle' },
+        dia:   { color: '#E69F00', dash: [8, 4],  dot: 'square' },
+        pulse: { color: '#CC79A7', dash: [3, 3],  dot: 'diamond' },
+        zones: [
+            'rgba(0, 114, 178, 0.08)',    // Low
+            'rgba(136, 136, 136, 0.06)',   // Normal
+            'rgba(230, 159, 0, 0.08)',     // Elevated
+            'rgba(204, 121, 167, 0.08)'    // High
+        ],
+        boundaries: [
+            'rgba(0, 114, 178, 0.4)',
+            'rgba(230, 159, 0, 0.4)',
+            'rgba(204, 121, 167, 0.4)'
+        ],
+        legendLines: ['#0072B2', '#E69F00', '#CC79A7'],
+        legendZones: [
+            'rgba(0, 114, 178, 0.25)',
+            'rgba(136, 136, 136, 0.2)',
+            'rgba(230, 159, 0, 0.25)',
+            'rgba(204, 121, 167, 0.25)'
+        ]
+    }
+};
+
 // DOM Elements
 const historyList = document.getElementById('history-list');
 const sessionCount = document.getElementById('session-count');
@@ -16,12 +69,14 @@ const filterButtons = document.querySelectorAll('.filter-btn');
 const customDateRange = document.getElementById('custom-date-range');
 const startDateInput = document.getElementById('start-date');
 const endDateInput = document.getElementById('end-date');
+const cbToggle = document.getElementById('cb-toggle');
 
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
     BPStorage.cleanOldSessions();
     setupFilterDefaults();
     setupEventListeners();
+    if (colorBlindMode) cbToggle.classList.add('active');
     updateDisplay();
 });
 
@@ -61,6 +116,14 @@ function setupEventListeners() {
 
     exportDataBtn.addEventListener('click', handleExportData);
     clearAllBtn.addEventListener('click', handleClearAllData);
+
+    // Colour blind toggle
+    cbToggle.addEventListener('click', () => {
+        colorBlindMode = !colorBlindMode;
+        localStorage.setItem('bp_cb_mode', colorBlindMode);
+        cbToggle.classList.toggle('active', colorBlindMode);
+        updateDisplay();
+    });
 
     // Redraw graph on resize
     let resizeTimeout;
@@ -257,18 +320,21 @@ function renderGraph(sessions) {
         ctx.fillText(Math.round(val).toString(), pad.left - 6, y + 4);
     }
 
+    // Active palette
+    const pal = colorBlindMode ? PALETTE.cb : PALETTE.standard;
+
     // BP classification zones (subtle background bands)
-    const zones = [
-        { from: minY, to: BP_LOW, color: 'rgba(59, 130, 246, 0.07)' },   // Low - blue
-        { from: BP_LOW, to: BP_NORMAL, color: 'rgba(16, 185, 129, 0.07)' }, // Normal - green
-        { from: BP_NORMAL, to: BP_ELEVATED, color: 'rgba(245, 158, 11, 0.07)' }, // Elevated - amber
-        { from: BP_ELEVATED, to: maxY, color: 'rgba(239, 68, 68, 0.07)' }  // High - red
+    const zoneBounds = [
+        { from: minY, to: BP_LOW },
+        { from: BP_LOW, to: BP_NORMAL },
+        { from: BP_NORMAL, to: BP_ELEVATED },
+        { from: BP_ELEVATED, to: maxY }
     ];
 
-    zones.forEach(zone => {
+    zoneBounds.forEach((zone, i) => {
         const top = toY(Math.min(zone.to, maxY));
         const bottom = toY(Math.max(zone.from, minY));
-        ctx.fillStyle = zone.color;
+        ctx.fillStyle = pal.zones[i];
         ctx.fillRect(pad.left, top, gw, bottom - top);
     });
 
@@ -279,52 +345,70 @@ function renderGraph(sessions) {
     ctx.font = '9px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
     ctx.textAlign = 'left';
 
-    const boundaries = [
-        { val: BP_LOW, color: 'rgba(59, 130, 246, 0.4)', label: '90' },
-        { val: BP_NORMAL, color: 'rgba(245, 158, 11, 0.4)', label: '120' },
-        { val: BP_ELEVATED, color: 'rgba(239, 68, 68, 0.4)', label: '140' }
+    const boundaryVals = [
+        { val: BP_LOW, label: '90' },
+        { val: BP_NORMAL, label: '120' },
+        { val: BP_ELEVATED, label: '140' }
     ];
 
-    boundaries.forEach(b => {
+    boundaryVals.forEach((b, i) => {
         if (b.val > minY && b.val < maxY) {
             const y = toY(b.val);
-            ctx.strokeStyle = b.color;
+            ctx.strokeStyle = pal.boundaries[i];
             ctx.beginPath();
             ctx.moveTo(pad.left, y);
             ctx.lineTo(w - pad.right, y);
             ctx.stroke();
-            ctx.fillStyle = b.color.replace('0.4', '0.7');
+            ctx.fillStyle = pal.boundaries[i].replace('0.4', '0.7');
             ctx.fillText(b.label, w - pad.right + 3, y + 3);
         }
     });
     ctx.restore();
 
-    // Draw a data line
-    function drawLine(key, color, lineW) {
+    // Draw a data line with optional dash pattern and dot shape
+    function drawLine(key, lineConf, lineW) {
         const pts = points.map((p, i) => ({ x: toX(i), y: toY(p[key]), v: p[key] }))
             .filter(p => p.v !== null);
         if (pts.length === 0) return;
 
-        ctx.strokeStyle = color;
+        ctx.save();
+        ctx.strokeStyle = lineConf.color;
         ctx.lineWidth = lineW;
         ctx.lineJoin = 'round';
+        ctx.setLineDash(lineConf.dash);
         ctx.beginPath();
         ctx.moveTo(pts[0].x, pts[0].y);
         for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y);
         ctx.stroke();
+        ctx.setLineDash([]);
 
-        // Dots
-        ctx.fillStyle = color;
+        // Data points
+        ctx.fillStyle = lineConf.color;
+        const r = 3.5;
         pts.forEach(p => {
             ctx.beginPath();
-            ctx.arc(p.x, p.y, 3.5, 0, Math.PI * 2);
+            if (lineConf.dot === 'square') {
+                ctx.rect(p.x - r, p.y - r, r * 2, r * 2);
+            } else if (lineConf.dot === 'diamond') {
+                ctx.moveTo(p.x, p.y - r - 0.5);
+                ctx.lineTo(p.x + r + 0.5, p.y);
+                ctx.lineTo(p.x, p.y + r + 0.5);
+                ctx.lineTo(p.x - r - 0.5, p.y);
+                ctx.closePath();
+            } else {
+                ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
+            }
             ctx.fill();
         });
+        ctx.restore();
     }
 
-    drawLine('sys', '#ef4444', 2.5);
-    drawLine('dia', '#3b82f6', 2.5);
-    drawLine('pulse', '#10b981', 2);
+    drawLine('sys', pal.sys, 2.5);
+    drawLine('dia', pal.dia, 2.5);
+    drawLine('pulse', pal.pulse, 2);
+
+    // Update legend colours
+    updateLegend(pal);
 
     // X-axis date labels
     ctx.fillStyle = textColor;
@@ -343,6 +427,21 @@ function renderGraph(sessions) {
             toX(i),
             h - pad.bottom + 18
         );
+    });
+}
+
+// Update legend swatches to match active palette
+function updateLegend(pal) {
+    const ids = ['legend-sys', 'legend-dia', 'legend-pulse'];
+    ids.forEach((id, i) => {
+        const el = document.getElementById(id);
+        if (el) el.style.background = pal.legendLines[i];
+    });
+
+    const zoneIds = ['legend-low', 'legend-normal', 'legend-elevated', 'legend-high'];
+    zoneIds.forEach((id, i) => {
+        const el = document.getElementById(id);
+        if (el) el.style.background = pal.legendZones[i];
     });
 }
 
