@@ -225,10 +225,14 @@ function renderGraph(sessions) {
     const gw = w - pad.left - pad.right;
     const gh = h - pad.top - pad.bottom;
 
-    // Y-axis range
+    // Normal BP thresholds
+    const NORMAL_SYS = 120;  // Normal systolic upper limit
+    const NORMAL_DIA = 80;   // Normal diastolic upper limit
+
+    // Y-axis range (ensure normal range is always visible)
     const allVals = points.flatMap(p => [p.sys, p.dia, p.pulse].filter(v => v !== null));
-    const minY = Math.floor(Math.min(...allVals) / 10) * 10 - 10;
-    const maxY = Math.ceil(Math.max(...allVals) / 10) * 10 + 10;
+    const minY = Math.floor(Math.min(Math.min(...allVals), NORMAL_DIA - 10) / 10) * 10 - 10;
+    const maxY = Math.ceil(Math.max(Math.max(...allVals), NORMAL_SYS + 10) / 10) * 10 + 10;
     const yRange = maxY - minY;
 
     const toY = v => pad.top + gh - ((v - minY) / yRange) * gh;
@@ -251,6 +255,38 @@ function renderGraph(sessions) {
         ctx.textAlign = 'right';
         ctx.fillText(Math.round(val).toString(), pad.left - 6, y + 4);
     }
+
+    // Normal BP range shaded band (between 80 and 120)
+    const normalTop = toY(NORMAL_SYS);
+    const normalBottom = toY(NORMAL_DIA);
+    ctx.fillStyle = 'rgba(16, 185, 129, 0.08)';
+    ctx.fillRect(pad.left, normalTop, gw, normalBottom - normalTop);
+
+    // Dashed reference line at 120 (normal systolic limit)
+    ctx.save();
+    ctx.setLineDash([6, 4]);
+    ctx.lineWidth = 1.5;
+    ctx.strokeStyle = 'rgba(239, 68, 68, 0.45)';
+    ctx.beginPath();
+    ctx.moveTo(pad.left, normalTop);
+    ctx.lineTo(w - pad.right, normalTop);
+    ctx.stroke();
+
+    ctx.font = '9px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+    ctx.fillStyle = 'rgba(239, 68, 68, 0.7)';
+    ctx.textAlign = 'left';
+    ctx.fillText('120', w - pad.right + 3, normalTop + 3);
+
+    // Dashed reference line at 80 (normal diastolic limit)
+    ctx.strokeStyle = 'rgba(59, 130, 246, 0.45)';
+    ctx.beginPath();
+    ctx.moveTo(pad.left, normalBottom);
+    ctx.lineTo(w - pad.right, normalBottom);
+    ctx.stroke();
+
+    ctx.fillStyle = 'rgba(59, 130, 246, 0.7)';
+    ctx.fillText('80', w - pad.right + 3, normalBottom + 3);
+    ctx.restore();
 
     // Draw a data line
     function drawLine(key, color, lineW) {

@@ -152,13 +152,13 @@ To test locally, simply open `index.html` in your web browser. No build process 
 For better testing experience with HTTPS (required for some features):
 ```bash
 # Using Python 3
-python -m http.server 8000
+python -m http.server 8100
 
 # Using Node.js
 npx serve
 ```
 
-Then visit `http://localhost:8000`
+Then visit `http://localhost:8100`
 
 ## File Structure
 
