@@ -13,6 +13,7 @@
         <header>
             <h1>💙 Blood Pressure Tracker</h1>
             <p class="subtitle">History &amp; Trends</p>
+            <button class="help-btn" id="help-btn" aria-label="User guide">?</button>
         </header>
 
         <nav class="nav-bar">
@@ -90,6 +91,58 @@
         <footer>
             <p>Data is stored locally on your device and automatically deleted after 30 days.</p>
         </footer>
+    </div>
+
+    <!-- User Guide Modal -->
+    <div class="modal-overlay" id="guide-modal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>User Guide</h2>
+                <button class="modal-close" id="guide-close" aria-label="Close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="guide-section">
+                    <h3>Adding a Reading</h3>
+                    <ul>
+                        <li>Enter your systolic pressure (70-200 mmHg)</li>
+                        <li>Enter your diastolic pressure (40-130 mmHg)</li>
+                        <li>Optionally enter your pulse rate (40-200 bpm)</li>
+                        <li>Tap "Add Reading" to add it to the session</li>
+                    </ul>
+                </div>
+                <div class="guide-section">
+                    <h3>Saving a Session</h3>
+                    <ul>
+                        <li>Add up to 10 readings per session for accurate averages</li>
+                        <li>Optionally add notes (time of day, medication, symptoms)</li>
+                        <li>Tap "Save Session" to store with calculated averages</li>
+                        <li>Use "Clear" to discard and start over</li>
+                    </ul>
+                </div>
+                <div class="guide-section">
+                    <h3>Viewing History</h3>
+                    <ul>
+                        <li>Navigate to the "History" tab to view saved sessions</li>
+                        <li>Filter by date range: 7 days, 14 days, 30 days, or custom</li>
+                        <li>View the trend graph showing systolic, diastolic, and pulse</li>
+                        <li>The shaded green area shows normal BP range (80-120)</li>
+                        <li>Tap a session to expand details and view individual readings</li>
+                    </ul>
+                </div>
+                <div class="guide-section">
+                    <h3>Managing Data</h3>
+                    <ul>
+                        <li><strong>Export</strong> - Download all sessions as a text file</li>
+                        <li><strong>Delete</strong> - Expand a session and tap "Delete Session"</li>
+                        <li><strong>Clear All</strong> - Remove all sessions at once</li>
+                    </ul>
+                </div>
+                <div class="guide-section">
+                    <h3>About</h3>
+                    <p>All data is stored locally on your device. No data is sent to any server. Readings older than 30 days are automatically removed.</p>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script src="storage.js"></script>
