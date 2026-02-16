@@ -81,3 +81,23 @@ const BPStorage = (function () {
         clearAllSessions
     };
 })();
+
+// Help Modal (shared across pages)
+document.addEventListener('DOMContentLoaded', () => {
+    const helpBtn = document.getElementById('help-btn');
+    const modal = document.getElementById('guide-modal');
+    const closeBtn = document.getElementById('guide-close');
+
+    if (!helpBtn || !modal) return;
+
+    helpBtn.addEventListener('click', () => modal.classList.add('active'));
+    closeBtn.addEventListener('click', () => modal.classList.remove('active'));
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) modal.classList.remove('active');
+    });
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && modal.classList.contains('active')) {
+            modal.classList.remove('active');
+        }
+    });
+});
