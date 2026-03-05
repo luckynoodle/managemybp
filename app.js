@@ -16,6 +16,7 @@ const currentReadingsList = document.getElementById('current-readings-list');
 const readingCountSpan = document.getElementById('reading-count');
 const sessionNotesTextarea = document.getElementById('session-notes');
 const notesCharCount = document.getElementById('notes-char-count');
+const sessionDatetimeInput = document.getElementById('session-datetime');
 const saveSessionBtn = document.getElementById('save-session-btn');
 const clearSessionBtn = document.getElementById('clear-session-btn');
 
@@ -23,7 +24,19 @@ const clearSessionBtn = document.getElementById('clear-session-btn');
 document.addEventListener('DOMContentLoaded', () => {
     BPStorage.cleanOldSessions();
     setupEventListeners();
+    setDefaultDatetime();
 });
+
+// Set datetime picker to current date/time
+function setDefaultDatetime() {
+    const now = new Date();
+    const y = now.getFullYear();
+    const m = String(now.getMonth() + 1).padStart(2, '0');
+    const d = String(now.getDate()).padStart(2, '0');
+    const h = String(now.getHours()).padStart(2, '0');
+    const min = String(now.getMinutes()).padStart(2, '0');
+    sessionDatetimeInput.value = `${y}-${m}-${d}T${h}:${min}`;
+}
 
 // Event Listeners
 function setupEventListeners() {
@@ -60,10 +73,12 @@ function handleAddReading(e) {
 
     currentReadings.push(reading);
 
+    const isFirstReading = currentReadings.length === 1;
     renderCurrentReadings();
     readingForm.reset();
     systolicInput.focus();
     currentReadingsSection.classList.remove('hidden');
+    if (isFirstReading) setDefaultDatetime();
 }
 
 // Validate reading values
@@ -134,7 +149,9 @@ function handleSaveSession() {
 
     const session = {
         id: Date.now(),
-        date: new Date().toISOString(),
+        date: sessionDatetimeInput.value
+            ? new Date(sessionDatetimeInput.value).toISOString()
+            : new Date().toISOString(),
         readings: [...currentReadings],
         average: average
     };
@@ -152,8 +169,10 @@ function handleSaveSession() {
     currentReadingsSection.classList.add('hidden');
     readingForm.reset();
     sessionNotesTextarea.value = '';
+    sessionDatetimeInput.value = '';
     updateCharCount();
     autoResizeTextarea();
+    setDefaultDatetime();
 
     const avgText = `${average.systolic}/${average.diastolic}${average.pulse ? ` • ${average.pulse} bpm` : ''}`;
     if (confirm(`Session saved! Average: ${avgText}\n\nView in history?`)) {
@@ -168,8 +187,10 @@ function handleClearSession() {
         currentReadingsSection.classList.add('hidden');
         readingForm.reset();
         sessionNotesTextarea.value = '';
+        sessionDatetimeInput.value = '';
         updateCharCount();
         autoResizeTextarea();
+        setDefaultDatetime();
     }
 }
 
