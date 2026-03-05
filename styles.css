@@ -624,7 +624,8 @@ textarea:focus {
     margin-bottom: 0.25rem;
 }
 
-input[type="date"] {
+input[type="date"],
+input[type="datetime-local"] {
     width: 100%;
     padding: 0.5rem;
     font-size: 0.85rem;
@@ -636,7 +637,8 @@ input[type="date"] {
     transition: border-color 0.2s;
 }
 
-input[type="date"]:focus {
+input[type="date"]:focus,
+input[type="datetime-local"]:focus {
     outline: none;
     border-color: var(--primary-color);
 }

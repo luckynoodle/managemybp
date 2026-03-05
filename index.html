@@ -5,8 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="description" content="Track and manage your blood pressure readings">
     <meta name="theme-color" content="#2563eb">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <title>Blood Pressure Tracker</title>
     <link rel="stylesheet" href="styles.css">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 </head>
 <body>
     <div class="container">
@@ -92,6 +96,15 @@
                         <span class="char-count"><span id="notes-char-count">0</span>/500</span>
                     </div>
 
+                    <div class="form-group">
+                        <label for="session-datetime">Date & Time <span class="optional">Optional</span></label>
+                        <input
+                            type="datetime-local"
+                            id="session-datetime"
+                            name="session-datetime"
+                        >
+                    </div>
+
                     <div class="button-group">
                         <button class="btn btn-success" id="save-session-btn">
                             Save Session
@@ -131,6 +144,7 @@
                     <ul>
                         <li>Add up to 10 readings per session for accurate averages</li>
                         <li>Optionally add notes (time of day, medication, symptoms)</li>
+                        <li>Optionally set a custom date and time for the session</li>
                         <li>Tap "Save Session" to store with calculated averages</li>
                         <li>Use "Clear" to discard and start over</li>
                     </ul>
@@ -176,5 +190,10 @@
 
     <script src="storage.js"></script>
     <script src="app.js"></script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('./service-worker.js');
+        }
+    </script>
 </body>
 </html>
